@@ -26,3 +26,7 @@ This is a Tauri desktop application (Rust backend + React frontend) for visualiz
 - **Frontend:** React, TypeScript, Ant Design, @nivo/treemap, react-beautiful-dnd
 - **Backend:** Tauri v2, Rust, sysinfo, walkdir, trash crate
 - **Styling:** Tailwind CSS via classes
+
+### Agent behavior
+- When discussing a plan, never go to implementation unless asked by the developer.
+- By default, set yourself in discussing plan mode.

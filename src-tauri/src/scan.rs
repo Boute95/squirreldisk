@@ -9,6 +9,14 @@ use tauri_plugin_shell::ShellExt;
 
 use crate::MyState;
 
+// Separate state for partial scans so they don't interfere with full scans
+pub struct PartialScanState(pub std::sync::Mutex<Option<tauri_plugin_shell::process::CommandChild>>);
+impl Default for PartialScanState {
+    fn default() -> Self {
+        Self(std::sync::Mutex::new(None))
+    }
+}
+
 #[derive(Clone, serde::Serialize)]
 struct Payload {
     items: u64,
@@ -203,6 +211,61 @@ pub fn stop(state: tauri::State<'_, MyState>) {
         .unwrap()
         .kill()
         .expect("State is None");
+}
+
+// Partial scan: re-scan a single directory and emit results
+pub fn refresh_folder(
+    app_handle: tauri::AppHandle,
+    state: tauri::State<'_, PartialScanState>,
+    path: String,
+) -> Result<(), ()> {
+    println!("Partial scan: {}", path);
+
+    let paths_to_scan = vec!["--json-output".to_string(), "--progress".to_string(), path];
+
+    let pdu_command = app_handle
+        .shell()
+        .sidecar("pdu")
+        .expect("failed to create `pdu` sidecar command");
+    let (mut rx, child) = pdu_command
+        .args(paths_to_scan)
+        .spawn()
+        .expect("Failed to spawn sidecar");
+
+    *state.0.lock().unwrap() = Some(child);
+
+    let re = regex::Regex::new(r"\(scanned ([0-9]*), total ([0-9]*)(?:, erred ([0-9]*))?\)").unwrap();
+
+    tauri::async_runtime::spawn(async move {
+        while let Some(event) = rx.recv().await {
+            match event {
+                tauri_plugin_shell::process::CommandEvent::Stdout(line) => {
+                    let string = String::from_utf8(line).unwrap();
+                    app_handle.emit("scan_partial_completed", string).ok();
+                }
+                tauri_plugin_shell::process::CommandEvent::Stderr(msg) => {
+                    let string = String::from_utf8(msg).unwrap();
+                    if let Some(groups) = re.captures(&string) {
+                        if groups.len() > 2 {
+                            emit_scan_status(&app_handle, groups);
+                        }
+                    }
+                }
+                tauri_plugin_shell::process::CommandEvent::Terminated(t) => {
+                    println!("Partial scan terminated: {:?}", t);
+                }
+                _ => {}
+            }
+        }
+    });
+
+    Ok(())
+}
+
+pub fn stop_refresh(state: tauri::State<'_, PartialScanState>) {
+    if let Some(child) = state.0.lock().unwrap().take() {
+        child.kill().ok();
+    }
 }
 
 fn emit_scan_status(app_handle: &tauri::AppHandle, groups: Captures) {

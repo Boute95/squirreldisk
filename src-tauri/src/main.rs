@@ -9,6 +9,7 @@ use std::fs;
 use std::path::PathBuf;
 
 use serde::Serialize;
+use scan::PartialScanState;
 use std::process::Command;
 use std::sync::Mutex;
 use sysinfo::{DiskExt, System, SystemExt};
@@ -42,6 +43,7 @@ fn main() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_process::init())
         .manage(MyState(Default::default()))
+        .manage(PartialScanState(Default::default()))
         .setup(|app| {
             let _window = app.get_webview_window("main").unwrap();
             // window.open_devtools();
@@ -71,7 +73,9 @@ fn main() {
             move_to_trash,
             get_trash_path,
             empty_trash,
-            restore_from_trash
+            restore_from_trash,
+            refresh_folder,
+            stop_refresh_folder
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -158,7 +162,7 @@ fn get_trash_path(disk_mount_point: String) -> Result<String, String> {
 }
 
 /// Get the trash directory path for a given disk/mount point.
-fn get_trash_directory(mount_point: &str) -> Result<String, String> {
+fn get_trash_directory(_mount_point: &str) -> Result<String, String> {
     #[cfg(target_os = "windows")]
     {
         // On Windows, the recycle bin is per-drive, so we use $Recycle.Bin
@@ -400,5 +404,23 @@ fn stop_scanning(
     _path: String,
 ) -> Result<(), ()> {
     scan::stop(state);
+    Ok(())
+}
+
+#[tauri::command]
+fn refresh_folder(
+    app_handle: tauri::AppHandle,
+    state: tauri::State<'_, PartialScanState>,
+    path: String,
+) -> Result<(), ()> {
+    scan::refresh_folder(app_handle, state, path)
+}
+
+#[tauri::command]
+fn stop_refresh_folder(
+    _app_handle: tauri::AppHandle,
+    state: tauri::State<'_, PartialScanState>,
+) -> Result<(), ()> {
+    scan::stop_refresh(state);
     Ok(())
 }
