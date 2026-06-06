@@ -20,6 +20,8 @@ import { patternSquaresDef } from "@nivo/core";
 
 import ToolBar from "./ToolBar";
 import FileContextMenu from "./FileContextMenu";
+import { Layout } from "antd";
+const { Header, Content, Sider } = Layout;
 
 (window as any).LockDNDEdgeScrolling = () => true;
 
@@ -284,263 +286,264 @@ const Scanning = () => {
    // Avoid progress bar going to the star due to undetectable fs hardlinks
    const cappedTotal = Math.min(status ? status.total : 0, used);
 
-   return (
-      <>
-         {view == "loading" && status && (
-            <div className="flex-1 flex flex-col justify-center items-center justify-items-center">
-               <img src={diskIcon} className="w-16 h-16"></img>
-               <div className="w-2/3">
-                  <div className="mt-5 mb-1 text-base text-center font-medium text-white">
-                     Scanning {disk} {((cappedTotal / used) * 100).toFixed(2)}
-                     %
-                     <br />
-                     {/* <span className="text-sm">{itemPath}</span> */}
-                  </div>
-                  <div className="mt-4 w-full bg-gray-200 rounded-full h-2.5">
-                     <div
-                        className="bg-blue-600 h-2.5 rounded-full"
-                        style={{
-                           width: ((cappedTotal / used) * 100).toFixed(2) + "%",
-                        }}
-                     ></div>
-                  </div>
-               </div>
-               <button
-                  onClick={() => navigate("/")}
-                  className="mt-6 relative inline-flex items-center justify-center p-0.5 mb-2 mr-2 overflow-hidden text-sm font-medium  rounded-lg group bg-gradient-to-br from-purple-600 to-blue-500 group-hover:from-purple-600 group-hover:to-blue-500 hover:text-white text-white focus:ring-4 focus:ring-blue-300 focus:ring-blue-800"
-               >
-                  <span className="relative px-5 py-2.5 transition-all ease-in duration-75  bg-gray-900 rounded-md group-hover:bg-opacity-0">
-                     Back
-                  </span>
-               </button>
+  return (
+    <>
+      {view == "loading" && status && (
+        <div className="flex-1 flex flex-col justify-center items-center justify-items-center">
+          <img src={diskIcon} className="w-16 h-16"></img>
+          <div className="w-2/3">
+            <div className="mt-5 mb-1 text-base text-center font-medium text-white">
+              Scanning {disk} {((cappedTotal / used) * 100).toFixed(2)}
+              %
+              <br />
+              {/* <span className="text-sm">{itemPath}</span> */}
             </div>
-         )}
-         {view == "disk" && (
-            <div className="grid grid-rows-[2.5rem_1fr] flex-1">
-               <ToolBar
-                  className="px-3"
-                  onFolderUp={goUpOneFolder}
-                  onPrevious={goPreviousPath}
-                  onNext={goNextPath}
-                  onTrash={goToTrash}
-                  onRefresh={handleRefresh}
-                  isRefreshing={isRefreshing}
-                  refreshStatus={refreshStatus}
-                  onCancelRefresh={handleCancelRefresh}
-               />
-               <div className="flex">
-                  <DragDropContext
-                     onDragEnd={(result) => {}}
-                     // onDragEnd={(result) => {
-                     //    console.log(result);
-                     //    if (result.destination?.droppableId !== "deletelist") {
-                     //       return;
-                     //    }
-                     //    const item = focusedPath!.children!.find(
-                     //       (i) => i.data.id === result.draggableId
-                     //    );
-                     //    setDeleteList((val) => {
-                     //       if (!val.find((e) => e.data.id === item!.data.id)) {
-                     //          deleteMap.current.set(item!.data.id, true);
+            <div className="mt-4 w-full bg-gray-200 rounded-full h-2.5">
+              <div
+                className="bg-blue-600 h-2.5 rounded-full"
+                style={{
+                  width: ((cappedTotal / used) * 100).toFixed(2) + "%",
+                }}
+              ></div>
+            </div>
+          </div>
+          <button
+            onClick={() => navigate("/")}
+            className="mt-6 relative inline-flex items-center justify-center p-0.5 mb-2 mr-2 overflow-hidden text-sm font-medium  rounded-lg group bg-gradient-to-br from-purple-600 to-blue-500 group-hover:from-purple-600 group-hover:to-blue-500 hover:text-white text-white focus:ring-4 focus:ring-blue-300 focus:ring-blue-800"
+          >
+            <span className="relative px-5 py-2.5 transition-all ease-in duration-75  bg-gray-900 rounded-md group-hover:bg-opacity-0">
+              Back
+            </span>
+          </button>
+        </div>
+      )}
+      {view == "disk" && (
+        <Layout>
+          <Header className={"pt-0 pl-2 h-10 flex flex-col items-start bg-white/20"}>
+            <ToolBar
+              onFolderUp={goUpOneFolder}
+              onPrevious={goPreviousPath}
+              onNext={goNextPath}
+              onTrash={goToTrash}
+              onRefresh={handleRefresh}
+              isRefreshing={isRefreshing}
+              refreshStatus={refreshStatus}
+              onCancelRefresh={handleCancelRefresh}
+            />
+          </Header>
 
-                     //          return [...val, item!];
-                     //       } else {
-                     //          return val;
-                     //       }
-                     //    });
-                     // }}
-                  >
-                     <div className="flex flex-1">
-                          <FileContextMenu path={selPath}>
-                             <div className="flex-1 flex" onContextMenu={(e) => { if (!contextNode) { e.preventDefault(); e.stopPropagation(); } }} onMouseLeave={() => setContextNode(null)}>
-                                {viewTree && (
-                                   <ResponsiveTreeMap
-                                      data={viewTree!}
-                                      identity="name"
-                                      value="data"
-                                      valueFormat=".03s"
-                                      labelTextColor={{
-                                         from: "color",
-                                         modifiers: [["darker", 2]],
-                                      }}
-                                      parentLabelTextColor={{
-                                         from: "color",
-                                         modifiers: [["darker", 3]],
-                                      }}
-                                      colors={{ scheme: "accent" }}
-                                      nodeOpacity={0.9}
-                                      label={(node) =>
-                                         `${node.id} (${humanFileSize(node.value, true)})`
-                                      }
-                                      labelSkipSize={60}
-                                      parentLabel={(node) =>
-                                         `${node.id} (${humanFileSize(node.value, true)})`
-                                      }
-                                      onMouseEnter={(node) => setContextNode(node as ComputedNode<DiskItem>)}
-                                      onClick={(node) => {
-                                          console.log("click");
-                                          setFocusedPath(node.data.id);
-                                       }}
-                                      defs={[
-                                         patternSquaresDef("pattern", {
-                                            size: 2,
-                                            padding: 4,
-                                            stagger: false,
-                                            background: "#ffffff",
-                                            color: "#c0bfbc99",
-                                         }),
-                                      ]}
-                                      fill={[
-                                         { match: (node) => node.data.isLeaf, id: "pattern" },
-                                      ]}
-                                   />
-                                )}
-                             </div>
-                          </FileContextMenu>
+          <Layout>
+            <DragDropContext
+              onDragEnd={(result) => { }}
+            // onDragEnd={(result) => {
+            //    console.log(result);
+            //    if (result.destination?.droppableId !== "deletelist") {
+            //       return;
+            //    }
+            //    const item = focusedPath!.children!.find(
+            //       (i) => i.data.id === result.draggableId
+            //    );
+            //    setDeleteList((val) => {
+            //       if (!val.find((e) => e.data.id === item!.data.id)) {
+            //          deleteMap.current.set(item!.data.id, true);
 
-                         <div className="w-1/3 p-4 flex flex-col">
-                           {/* {focusedPath && parentNode && (
+            //          return [...val, item!];
+            //       } else {
+            //          return val;
+            //       }
+            //    });
+            // }}
+            >
+              <Sider>
+                {/* {focusedPath && parentNode && (
                               <ParentFolder parentPath={parentNode}></ParentFolder>
                            )} */}
-                           <Droppable droppableId="filelist">
-                              {(provided) => (
-                                 <div
-                                    className="overflow-y-auto"
-                                    style={{ flex: "1 1 auto", height: 100 }}
-                                    ref={provided.innerRef}
-                                    {...provided.droppableProps}
-                                 >
-                                    {viewTree && (
-                                       <FileLine
-                                          className="py-2 bg-white/20"
-                                          item={viewTree}
-                                          index={0}
-                                          setFocusedPath={setFocusedPath}
-                                       />
-                                    )}
-                                    <>
-                                       {viewTree?.children?.map((c, index) => (
-                                          <FileLine
-                                             className="pl-8"
-                                             key={index}
-                                             item={c}
-                                             index={index}
-                                             setFocusedPath={setFocusedPath}
-                                          ></FileLine>
-                                       ))}
-                                    </>
-                                    {provided.placeholder}
-                                 </div>
-                              )}
-                           </Droppable>
-                           <Droppable droppableId="deletelist">
-                              {(provided) => (
-                                 <div
-                                    className="pt-1 flex-initial"
-                                    ref={provided.innerRef}
-                                    {...provided.droppableProps}
-                                 >
-                                    <div className="rounded-lg border	border-gray-500	border-dashed p-2 text-gray-500 text-center mb-0">
-                                       {deleteList.length == 0 && (
-                                          <>Drag file and folders here to delete</>
-                                       )}
-                                       {deleteList.length > 0 && (
-                                          <div>
-                                             <div>
-                                                {deleteList.length} files selected -{" "}
-                                                <a
-                                                   href="#"
-                                                   className="underline underline-offset-2"
-                                                   onClick={() => {
-                                                      setDeleteList([]);
-                                                      deleteMap.current.clear();
-                                                   }}
-                                                >
-                                                   Clear Selection
-                                                </a>
-                                             </div>
-                                          </div>
-                                       )}
-                                       <div>{provided.placeholder}</div>
-                                       {deleteList.length > 0 && (
-                                          <button
-                                             onClick={async () => {
-                                                setDeleteState({
-                                                   isDeleting: true,
-                                                   total: deleteList.length,
-                                                   current: 0,
-                                                });
-                                                // Avvio spinner
-                                                let successful: Array<D3HierarchyDiskItem> =
-                                                   [];
-                                                // Cancello (errori li scarto da eliminare quindi vengono tenuti)
-                                                // for (let node of deleteList) {
-                                                //    const nodePath = buildFullPath(node)
-                                                //       .replace("\\/", "/")
-                                                //       .replace("\\", "/");
-                                                //    try {
-                                                //       //   await window.electron.diskUtils.rimraf(
-                                                //       //     nodePath
-                                                //       //   );
-                                                //       //   if (
-                                                //       //     node.children &&
-                                                //       //     node.children.length > 0
-                                                //       //   ) {
-                                                //       // Workaroound: Since sometimes if the tree has some trimmed leafs a folder has no children
-                                                //       removeDir(nodePath, {
-                                                //          recursive: true,
-                                                //       }).catch((err) =>
-                                                //          removeFile(nodePath).catch(
-                                                //             (err2) =>
-                                                //                console.error(err, err2)
-                                                //          )
-                                                //       );
-                                                //       //   } else {
-                                                //       //     removeFile(nodePath).catch((err) => console.error(err));
-                                                //       //   }
-                                                //       successful.push(node);
-                                                //       setDeleteState((prev) => ({
-                                                //          ...prev,
-                                                //          current: prev.current + 1,
-                                                //       }));
-                                                //    } catch (e) {
-                                                //       console.error(e);
-                                                //    }
-                                                // }
-                                                // Una volta finito aggiorno il grafico
-                                                d3Chart.current.deleteNodes(successful);
-                                                setDeleteState((prev) => ({
-                                                   isDeleting: false,
-                                                   total: 0,
-                                                   current: 0,
-                                                }));
-                                                setDeleteList([]);
-                                                deleteMap.current.clear();
-                                             }}
-                                             type="button"
-                                             disabled={deleteState.isDeleting}
-                                             className="text-white w-full mt-3 bg-gradient-to-r from-red-600 via-red-700 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:ring-red-300 focus:ring-red-800 shadow-sm shadow-red-500/50 shadow-lg shadow-red-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2"
-                                          >
-                                             {deleteState.isDeleting
-                                                ? "Deleting " +
-                                                  deleteState.current +
-                                                  " of " +
-                                                  deleteState.total
-                                                : "Delete"}
-                                          </button>
-                                       )}
-                                    </div>
-                                 </div>
-                              )}
-                           </Droppable>
-                        </div>
-                     </div>
-                   </DragDropContext>
-                 </div>
-             </div>
-          )}
-      </>
-   );
+                <Droppable droppableId="filelist">
+                  {(provided) => (
+                    <div
+                      className="overflow-y-auto"
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                    >
+                      {viewTree && (
+                        <FileLine
+                          className="py-2 bg-white/20"
+                          item={viewTree}
+                          index={0}
+                          setFocusedPath={setFocusedPath}
+                        />
+                      )}
+                      <>
+                        {viewTree?.children?.map((c, index) => (
+                          <FileLine
+                            className="pl-8"
+                            key={index}
+                            item={c}
+                            index={index}
+                            setFocusedPath={setFocusedPath}
+                          ></FileLine>
+                        ))}
+                      </>
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+                <Droppable droppableId="deletelist">
+                  {(provided) => (
+                    <div
+                      className="pt-1" 
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                    >
+                      <div className="rounded-lg border	border-gray-500	border-dashed p-2 text-gray-500 text-center mb-0">
+                        {deleteList.length == 0 && (
+                          <>Drag file and folders here to delete</>
+                        )}
+                        {deleteList.length > 0 && (
+                          <div>
+                            <div>
+                              {deleteList.length} files selected -{" "}
+                              <a
+                                href="#"
+                                className="underline underline-offset-2"
+                                onClick={() => {
+                                  setDeleteList([]);
+                                  deleteMap.current.clear();
+                                }}
+                              >
+                                Clear Selection
+                              </a>
+                            </div>
+                          </div>
+                        )}
+                        <div>{provided.placeholder}</div>
+                        {deleteList.length > 0 && (
+                          <button
+                            onClick={async () => {
+                              setDeleteState({
+                                isDeleting: true,
+                                total: deleteList.length,
+                                current: 0,
+                              });
+                              // Avvio spinner
+                              let successful: Array<D3HierarchyDiskItem> =
+                                [];
+                              // Cancello (errori li scarto da eliminare quindi vengono tenuti)
+                              // for (let node of deleteList) {
+                              //    const nodePath = buildFullPath(node)
+                              //       .replace("\\/", "/")
+                              //       .replace("\\", "/");
+                              //    try {
+                              //       //   await window.electron.diskUtils.rimraf(
+                              //       //     nodePath
+                              //       //   );
+                              //       //   if (
+                              //       //     node.children &&
+                              //       //     node.children.length > 0
+                              //       //   ) {
+                              //       // Workaroound: Since sometimes if the tree has some trimmed leafs a folder has no children
+                              //       removeDir(nodePath, {
+                              //          recursive: true,
+                              //       }).catch((err) =>
+                              //          removeFile(nodePath).catch(
+                              //             (err2) =>
+                              //                console.error(err, err2)
+                              //          )
+                              //       );
+                              //       //   } else {
+                              //       //     removeFile(nodePath).catch((err) => console.error(err));
+                              //       //   }
+                              //       successful.push(node);
+                              //       setDeleteState((prev) => ({
+                              //          ...prev,
+                              //          current: prev.current + 1,
+                              //       }));
+                              //    } catch (e) {
+                              //       console.error(e);
+                              //    }
+                              // }
+                              // Una volta finito aggiorno il grafico
+                              d3Chart.current.deleteNodes(successful);
+                              setDeleteState((prev) => ({
+                                isDeleting: false,
+                                total: 0,
+                                current: 0,
+                              }));
+                              setDeleteList([]);
+                              deleteMap.current.clear();
+                            }}
+                            type="button"
+                            disabled={deleteState.isDeleting}
+                            className="text-white w-full mt-3 bg-gradient-to-r from-red-600 via-red-700 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:ring-red-300 focus:ring-red-800 shadow-sm shadow-red-500/50 shadow-lg shadow-red-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2"
+                          >
+                            {deleteState.isDeleting
+                              ? "Deleting " +
+                              deleteState.current +
+                              " of " +
+                              deleteState.total
+                              : "Delete"}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </Droppable>
+              </Sider>
+
+              <Content>
+                <FileContextMenu path={selPath}>
+                  <div className="h-full w-full" onContextMenu={(e) => { if (!contextNode) { e.preventDefault(); e.stopPropagation(); } }} onMouseLeave={() => setContextNode(null)}>
+                    {viewTree && (
+                      <ResponsiveTreeMap
+                        data={viewTree!}
+                        identity="name"
+                        value="data"
+                        valueFormat=".03s"
+                        labelTextColor={{
+                          from: "color",
+                          modifiers: [["darker", 2]],
+                        }}
+                        parentLabelTextColor={{
+                          from: "color",
+                          modifiers: [["darker", 3]],
+                        }}
+                        colors={{ scheme: "accent" }}
+                        nodeOpacity={0.9}
+                        label={(node) =>
+                          `${node.id} (${humanFileSize(node.value, true)})`
+                        }
+                        labelSkipSize={60}
+                        parentLabel={(node) =>
+                          `${node.id} (${humanFileSize(node.value, true)})`
+                        }
+                        onMouseEnter={(node) => setContextNode(node as ComputedNode<DiskItem>)}
+                        onClick={(node) => {
+                          console.log("click");
+                          setFocusedPath(node.data.id);
+                        }}
+                        defs={[
+                          patternSquaresDef("pattern", {
+                            size: 2,
+                            padding: 4,
+                            stagger: false,
+                            background: "#ffffff",
+                            color: "#c0bfbc99",
+                          }),
+                        ]}
+                        fill={[
+                          { match: (node) => node.data.isLeaf, id: "pattern" },
+                        ]}
+                      />
+                    )}
+                  </div>
+                </FileContextMenu>
+              </Content>
+            </DragDropContext>
+          </Layout>
+        </Layout>
+      )}
+    </>
+  );
 };
 
 function humanFileSize(bytes: number, si = false, dp = 1) {

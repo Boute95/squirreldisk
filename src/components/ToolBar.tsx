@@ -30,49 +30,45 @@ const ToolBar: React.FC<ToolBarProps> = ({
       ? Math.round((refreshStatus.items / refreshStatus.total) * 100)
       : 0;
 
-   return (
-      <div>
-         <Flex gap="small" align="center" className={`bg-white/20 ${className}`}>
-            <Flex gap="small">
-               <Button icon={<TiArrowLeft size={28} />} type="text" title="Previous" onClick={onPrevious} />
-               <Button icon={<TiArrowRight size={28} />} type="text" title="Next" onClick={onNext} />
-            </Flex>
-            <Divider type="vertical" />
-            <Button icon={<MdDriveFolderUpload size={28}/>} type="text" title="Folder Up" onClick={onFolderUp} />
-            <Divider type="vertical" />
-            <Button 
-               icon={<MdRefresh size={28} className={isRefreshing ? 'animate-spin' : ''} />} 
-               type="text" 
-               title="Refresh Folder" 
-               onClick={onRefresh}
-            />
-            {isRefreshing && onCancelRefresh && (
-               <>
-                  <Divider type="vertical" />
-                  <Button 
-                     icon={<span className="text-xs font-bold">✕</span>} 
-                     type="text" 
-                     title="Cancel Refresh" 
-                     onClick={onCancelRefresh}
-                     style={{ color: '#ff4d4f' }}
-                  />
-               </>
-            )}
-            <Divider type="vertical" />
-            <Button icon={<MdDelete size={28}/>} type="text" title="Trash" onClick={onTrash} />
-         </Flex>
-         {isRefreshing && refreshStatus && (
-            <div className="px-3 pb-1">
-               <Progress
-                  percent={progressPercent}
-                  status="active"
-                  strokeWidth={4}
-                  showInfo={false}
-               />
-            </div>
-         )}
-      </div>
-   );
+  return (
+    <Flex gap="small" className={`items-center ${className}`}>
+      <Flex gap="small">
+        <Button icon={<span className="flex items-center"><TiArrowLeft className="text-3xl" /></span>} type="text" shape="circle" title="Previous" onClick={onPrevious} />
+        <Button icon={<span className="flex items-center"><TiArrowRight className="text-3xl" /></span>} type="text" shape="circle" title="Next" onClick={onNext} />
+      </Flex>
+      <Divider type="vertical" />
+      <Button icon={<span className="flex items-center"><MdDriveFolderUpload className="text-2xl" /></span>} type="text" shape="circle" title="Folder Up" onClick={onFolderUp} />
+      <Divider type="vertical" />
+      <Button
+        icon={<span className="flex items-center"><MdRefresh className={`text-2xl ${isRefreshing ? 'animate-spin' : ''}`} /></span>}
+        type="text"
+        shape="circle"
+        title="Refresh Folder"
+        onClick={onRefresh}
+      />
+      {isRefreshing && onCancelRefresh && (
+        <>
+          <Divider type="vertical" />
+          <Button
+            icon={<span className="flex items-center"><span className="text-xs font-bold">✕</span></span>}
+            type="text"
+            shape="circle"
+            title="Cancel Refresh"
+            onClick={onCancelRefresh}
+            style={{ color: '#ff4d4f' }}
+          />
+        </>
+      )}
+      <Divider type="vertical" />
+      <Button icon={<span className="flex items-center"><MdDelete className="text-2xl" /></span>} type="text" shape="circle" title="Trash" onClick={onTrash} />
+      <Progress
+        percent={progressPercent}
+        status="active"
+        strokeWidth={4}
+        showInfo={false}
+      />
+    </Flex>
+  );
 };
 
 export default ToolBar;
