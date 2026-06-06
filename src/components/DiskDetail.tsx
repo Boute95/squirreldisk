@@ -36,6 +36,7 @@ const Scanning = () => {
    const [focusedPath, setFocusedPath] = useState<string>("/");
    const [pathHistory, setPathHistory] = useState<string[]>(["/"]);
    const [currentHistoryIndex, setCurrentHistoryIndex] = useState<number>(0);
+   const [trashPath, setTrashPath] = useState<string>("");
    const [hoveredItem, setHoveredItem] = useState<DiskItem | null>(null);
    const [contextNode, setContextNode] = useState<ComputedNode<DiskItem> | null>(null);
    const d3Chart = useRef(null) as any;
@@ -76,6 +77,21 @@ const Scanning = () => {
          setFocusedPath(pathHistory[currentHistoryIndex + 1]);
       }
    };
+
+   const goToTrash = () => {
+      if (!trashPath) return;
+      // Navigate to trash folder - treat it like entering a directory
+      setFocusedPath(trashPath);
+   };
+
+   // Get trash path for this disk on mount
+   useEffect(() => {
+      invoke("get_trash_path", { diskMountPoint: disk }).then((path: string) => {
+         setTrashPath(path);
+      }).catch(() => {
+         setTrashPath("");
+      });
+   }, [disk]);
 
    useEffect(() => {
       if (fullTree.current) {
@@ -191,6 +207,7 @@ const Scanning = () => {
                   onFolderUp={goUpOneFolder}
                   onPrevious={goPreviousPath}
                   onNext={goNextPath}
+                  onTrash={goToTrash}
                />
                <div className="flex">
                   <DragDropContext
