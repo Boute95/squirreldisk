@@ -1,13 +1,13 @@
 import { MutableRefObject } from "react";
-import { DragDropContext, Droppable } from "react-beautiful-dnd";
+import { DragDropContext } from "react-beautiful-dnd";
 import { ResponsiveTreeMap, ComputedNode } from "@nivo/treemap";
 import { patternSquaresDef } from "@nivo/core";
 
-import { FileLine } from "./FileLine";
 import ToolBar from "./ToolBar";
 import FileContextMenu from "./FileContextMenu";
+import ExplorerSidebar from "./ExplorerSidebar";
 import { Layout } from "antd";
-const { Header, Content, Sider } = Layout;
+const { Header } = Layout;
 
 (window as any).LockDNDEdgeScrolling = () => true;
 
@@ -81,143 +81,17 @@ const DiskExplorerView = ({
       </Header>
 
       <Layout>
-        <DragDropContext
-          onDragEnd={(result) => { }}
-        >
-          <Sider>
-            {/* {focusedPath && parentNode && (
-                          <ParentFolder parentPath={parentNode}></ParentFolder>
-                       )} */}
-            <Droppable droppableId="filelist">
-              {(provided) => (
-                <div
-                  className="overflow-y-auto"
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                >
-                  {viewTree && (
-                    <FileLine
-                      className="py-2 bg-white/20"
-                      item={viewTree}
-                      index={0}
-                      setFocusedPath={setFocusedPath}
-                    />
-                  )}
-                  <>
-                    {viewTree?.children?.map((c, index) => (
-                      <FileLine
-                        className="pl-8"
-                        key={index}
-                        item={c}
-                        index={index}
-                        setFocusedPath={setFocusedPath}
-                      ></FileLine>
-                    ))}
-                  </>
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-            <Droppable droppableId="deletelist">
-              {(provided) => (
-                <div
-                  className="pt-1"
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                >
-                  <div className="rounded-lg border	border-gray-500	border-dashed p-2 text-gray-500 text-center mb-0">
-                    {deleteList.length == 0 && (
-                      <>Drag file and folders here to delete</>
-                    )}
-                    {deleteList.length > 0 && (
-                      <div>
-                        <div>
-                          {deleteList.length} files selected -{" "}
-                          <a
-                            href="#"
-                            className="underline underline-offset-2"
-                            onClick={() => {
-                              setDeleteList([]);
-                              deleteMap.current.clear();
-                            }}
-                          >
-                            Clear Selection
-                          </a>
-                        </div>
-                      </div>
-                    )}
-                    <div>{provided.placeholder}</div>
-                    {deleteList.length > 0 && (
-                      <button
-                        onClick={async () => {
-                          setDeleteState({
-                            isDeleting: true,
-                            total: deleteList.length,
-                            current: 0,
-                          });
-                          // Avvio spinner
-                          let successful: Array<D3HierarchyDiskItem> = [];
-                          // Cancello (errori li scarto da eliminare quindi vengono tenuti)
-                          // for (let node of deleteList) {
-                          //    const nodePath = buildFullPath(node)
-                          //       .replace("\\/", "/")
-                          //       .replace("\\", "/");
-                          //    try {
-                          //       //   await window.electron.diskUtils.rimraf(
-                          //       //     nodePath
-                          //       //   );
-                          //       //   if (
-                          //       //     node.children &&
-                          //       //     node.children.length > 0
-                          //       //   ) {
-                          //       // Workaroound: Since sometimes if the tree has some trimmed leafs a folder has no children
-                          //       removeDir(nodePath, {
-                          //          recursive: true,
-                          //       }).catch((err) =>
-                          //          removeFile(nodePath).catch(
-                          //             (err2) =>
-                          //                console.error(err, err2)
-                          //          )
-                          //       );
-                          //       //   } else {
-                          //       //     removeFile(nodePath).catch((err) => console.error(err));
-                          //       //   }
-                          //       successful.push(node);
-                          //       setDeleteState((prev) => ({
-                          //          ...prev,
-                          //          current: prev.current + 1,
-                          //       }));
-                          //    } catch (e) {
-                          //       console.error(e);
-                          //    }
-                          // }
-                          // Una volta finito aggiorno il grafico
-                          d3Chart.current.deleteNodes(successful);
-                          setDeleteState((prev) => ({
-                            isDeleting: false,
-                            total: 0,
-                            current: 0,
-                          }));
-                          setDeleteList([]);
-                          deleteMap.current.clear();
-                        }}
-                        type="button"
-                        disabled={deleteState.isDeleting}
-                        className="text-white w-full mt-3 bg-gradient-to-r from-red-600 via-red-700 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:ring-red-300 focus:ring-red-800 shadow-sm shadow-red-500/50 shadow-lg shadow-red-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2"
-                      >
-                        {deleteState.isDeleting
-                          ? "Deleting " +
-                          deleteState.current +
-                          " of " +
-                          deleteState.total
-                          : "Delete"}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
-            </Droppable>
-          </Sider>
+        <DragDropContext onDragEnd={() => {}}>
+          <ExplorerSidebar
+            viewTree={viewTree}
+            setFocusedPath={setFocusedPath}
+            deleteList={deleteList}
+            setDeleteList={setDeleteList}
+            deleteMap={deleteMap}
+            deleteState={deleteState}
+            setDeleteState={setDeleteState}
+            d3Chart={d3Chart}
+          />
 
           <FileContextMenu path={selPath}>
             <div className="h-full w-full" onContextMenu={(e) => { if (!contextNode) { e.preventDefault(); e.stopPropagation(); } }} onMouseLeave={() => setContextNode(null)}>

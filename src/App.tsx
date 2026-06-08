@@ -5,7 +5,7 @@ import { ConfigProvider, theme } from 'antd';
 import themeConfig from './theme-config';
 
 import TitleBar from "./components/TitleBar";
-import DiskList from "./components/DiskList";
+import DiskListView from "./components/DiskListView";
 import DiskDetail from "./components/DiskDetail";
 
 import { platform } from "@tauri-apps/plugin-os";
@@ -37,7 +37,7 @@ function App() {
             >
                <TitleBar></TitleBar>
                <Routes>
-                  <Route path="/" element={<DiskList />} />
+                  <Route path="/" element={<DiskListView />} />
                   <Route path="/disk" element={<DiskDetail />} />
                </Routes>
             </div>

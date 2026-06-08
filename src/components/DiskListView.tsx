@@ -18,7 +18,7 @@ declare global {
   }
 }
 
-const DiskList = () => {
+const DiskListView = () => {
   const [disks, setDisks] = useState([]);
   const [appVersion, setAppVersion] = useState("1.0.0");
   const navigate = useNavigate();
@@ -116,4 +116,4 @@ const DiskList = () => {
   );
 };
 
-export default DiskList;
+export default DiskListView;
