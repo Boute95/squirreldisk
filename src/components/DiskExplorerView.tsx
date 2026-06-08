@@ -207,9 +207,9 @@ const DiskExplorerView = ({
                       >
                         {deleteState.isDeleting
                           ? "Deleting " +
-                            deleteState.current +
-                            " of " +
-                            deleteState.total
+                          deleteState.current +
+                          " of " +
+                          deleteState.total
                           : "Delete"}
                       </button>
                     )}
@@ -219,54 +219,52 @@ const DiskExplorerView = ({
             </Droppable>
           </Sider>
 
-          <Content>
-            <FileContextMenu path={selPath}>
-              <div className="h-full w-full" onContextMenu={(e) => { if (!contextNode) { e.preventDefault(); e.stopPropagation(); } }} onMouseLeave={() => setContextNode(null)}>
-                {viewTree && (
-                  <ResponsiveTreeMap
-                    data={viewTree!}
-                    identity="name"
-                    value="data"
-                    valueFormat=".03s"
-                    labelTextColor={{
-                      from: "color",
-                      modifiers: [["darker", 2]],
-                    }}
-                    parentLabelTextColor={{
-                      from: "color",
-                      modifiers: [["darker", 3]],
-                    }}
-                    colors={{ scheme: "accent" }}
-                    nodeOpacity={0.9}
-                    label={(node) =>
-                      `${node.id} (${humanFileSize(node.value, true)})`
-                    }
-                    labelSkipSize={60}
-                    parentLabel={(node) =>
-                      `${node.id} (${humanFileSize(node.value, true)})`
-                    }
-                    onMouseEnter={(node) => setContextNode(node as ComputedNode<DiskItem>)}
-                    onClick={(node) => {
-                      console.log("click");
-                      setFocusedPath(node.data.id);
-                    }}
-                    defs={[
-                      patternSquaresDef("pattern", {
-                        size: 2,
-                        padding: 4,
-                        stagger: false,
-                        background: "#ffffff",
-                        color: "#c0bfbc99",
-                      }),
-                    ]}
-                    fill={[
-                      { match: (node) => node.data.isLeaf, id: "pattern" },
-                    ]}
-                  />
-                )}
-              </div>
-            </FileContextMenu>
-          </Content>
+          <FileContextMenu path={selPath}>
+            <div className="h-full w-full" onContextMenu={(e) => { if (!contextNode) { e.preventDefault(); e.stopPropagation(); } }} onMouseLeave={() => setContextNode(null)}>
+              {viewTree && (
+                <ResponsiveTreeMap
+                  data={viewTree}
+                  identity="name"
+                  value="data"
+                  valueFormat=".03s"
+                  labelTextColor={{
+                    from: "color",
+                    modifiers: [["darker", 2]],
+                  }}
+                  parentLabelTextColor={{
+                    from: "color",
+                    modifiers: [["darker", 3]],
+                  }}
+                  colors={{ scheme: "accent" }}
+                  nodeOpacity={0.9}
+                  label={(node) =>
+                    `${node.id} (${humanFileSize(node.value, true)})`
+                  }
+                  labelSkipSize={60}
+                  parentLabel={(node) =>
+                    `${node.id} (${humanFileSize(node.value, true)})`
+                  }
+                  onMouseEnter={(node) => setContextNode(node as ComputedNode<DiskItem>)}
+                  onClick={(node) => {
+                    console.log("click");
+                    setFocusedPath(node.data.id);
+                  }}
+                  defs={[
+                    patternSquaresDef("pattern", {
+                      size: 2,
+                      padding: 4,
+                      stagger: false,
+                      background: "#ffffff",
+                      color: "#c0bfbc99",
+                    }),
+                  ]}
+                  fill={[
+                    { match: (node) => node.data.isLeaf, id: "pattern" },
+                  ]}
+                />
+              )}
+            </div>
+          </FileContextMenu>
         </DragDropContext>
       </Layout>
     </Layout>
