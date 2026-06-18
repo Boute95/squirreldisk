@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { Button, Flex, Divider, Progress } from "antd";
-import { MdDriveFolderUpload, MdDelete, MdRefresh, MdClose } from "react-icons/md";
+import { Button, Flex, Divider, Progress, Popconfirm } from "antd";
+import { MdDriveFolderUpload, MdDelete, MdRefresh, MdClose, MdRestore, MdDeleteSweep } from "react-icons/md";
 import { TiArrowLeft, TiArrowRight } from "react-icons/ti";
 
 interface ToolBarProps {
@@ -14,6 +14,9 @@ interface ToolBarProps {
    refreshStatus?: { items: number; total: number } | null;
    onCancelRefresh?: () => void;
    knownFolderSize?: number;
+   inTrash?: boolean;
+   onRestore?: () => void;
+   onEmptyTrash?: () => void;
 }
 
 const ToolBar: React.FC<ToolBarProps> = ({ 
@@ -26,7 +29,10 @@ const ToolBar: React.FC<ToolBarProps> = ({
    isRefreshing,
    refreshStatus,
    onCancelRefresh,
-   knownFolderSize
+   knownFolderSize,
+   inTrash,
+   onRestore,
+   onEmptyTrash
 }) => {
 
 useEffect(() => {
@@ -75,6 +81,26 @@ useEffect(() => {
       )}
       <Divider type="vertical" />
       <Button icon={<span className="flex items-center"><MdDelete className="text-2xl" /></span>} type="text" shape="circle" title="Trash" onClick={onTrash} />
+      {inTrash && (
+        <>
+          <Divider type="vertical" />
+          <Button icon={<MdRestore className="text-xl" />} type="text" title="Restore" onClick={onRestore}>
+            Restore
+          </Button>
+          <Popconfirm
+            title="Empty Trash"
+            description="Are you sure you want to permanently delete all items in the trash?"
+            onConfirm={onEmptyTrash}
+            okText="Yes"
+            cancelText="No"
+            okButtonProps={{ danger: true }}
+          >
+            <Button icon={<MdDeleteSweep className="text-xl" />} danger type="text" title="Empty Trash">
+              Empty trash
+            </Button>
+          </Popconfirm>
+        </>
+      )}
     </Flex>
   );
 };

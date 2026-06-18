@@ -11,6 +11,7 @@ import {
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { ComputedNode } from "@nivo/treemap";
+import { message } from "antd";
 
 import ScanProgressView from "./ScanProgressView";
 import DiskExplorerView from "./DiskExplorerView";
@@ -78,6 +79,20 @@ const Scanning = () => {
       if (!trashPath) return;
       setFocusedPath(trashPath);
       handleRefresh(trashPath);
+   };
+
+   const inTrash = trashPath && focusedPath ? focusedPath.startsWith(trashPath) : false;
+
+   const handleEmptyTrash = async () => {
+      try {
+         await invoke("empty_trash", { diskMountPoint: disk });
+         message.success("Trash emptied successfully");
+         if (inTrash) {
+            handleRefresh();
+         }
+      } catch (err) {
+         message.error(`Failed to empty trash: ${err}`);
+      }
    };
 
    useEffect(() => {
@@ -263,6 +278,8 @@ const Scanning = () => {
                onPrevious={goPreviousPath}
                onNext={goNextPath}
                onTrash={goToTrash}
+               inTrash={inTrash}
+               onEmptyTrash={handleEmptyTrash}
                isRefreshing={isRefreshing}
                refreshStatus={refreshStatus}
                onRefresh={handleRefresh}
