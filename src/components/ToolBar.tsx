@@ -41,27 +41,30 @@ useEffect(() => {
 
   return (
     <Flex gap="small" className={`items-center ${className}`}>
+      {/* Navigation section */}
       <Flex gap="small">
         <Button icon={<span className="flex items-center"><TiArrowLeft className="text-3xl" /></span>} type="text" shape="circle" title="Previous" onClick={onPrevious} />
         <Button icon={<span className="flex items-center"><TiArrowRight className="text-3xl" /></span>} type="text" shape="circle" title="Next" onClick={onNext} />
+        <Button icon={<span className="flex items-center"><MdDriveFolderUpload className="text-2xl" /></span>} type="text" shape="circle" title="Folder Up" onClick={onFolderUp} />
+        <Button icon={<span className="flex items-center"><MdDelete className="text-2xl" /></span>} type="text" shape="circle" title="Trash" onClick={onTrash} />
       </Flex>
+
       <Divider type="vertical" />
-      <Button icon={<span className="flex items-center"><MdDriveFolderUpload className="text-2xl" /></span>} type="text" shape="circle" title="Folder Up" onClick={onFolderUp} />
-      <Divider type="vertical" />
-      {!isRefreshing && (
-        <Button
-          icon={<span className="flex items-center"><MdRefresh className="text-2xl" /></span>}
-          type="text"
-          shape="circle"
-          title="Refresh Folder"
-          onClick={onRefresh}
-        />
-      )}
-      {isRefreshing && onCancelRefresh && (
-        <>
+
+      {/* Action section */}
+      <Flex gap="small">
+        {!isRefreshing && (
+          <Button
+            icon={<span className="flex items-center"><MdRefresh className="text-2xl" /></span>}
+            type="text"
+            shape="circle"
+            title="Refresh Folder"
+            onClick={onRefresh}
+          />
+        )}
+        {isRefreshing && onCancelRefresh && (
           <Progress
             percent={refreshStatus && knownFolderSize && knownFolderSize > 0 ? Math.round((refreshStatus.total / knownFolderSize) * 100) : 0}
-
             type="circle"
             size={24}
             strokeWidth={18}
@@ -77,30 +80,27 @@ useEffect(() => {
               />
             )}
           />
-        </>
-      )}
-      <Divider type="vertical" />
-      <Button icon={<span className="flex items-center"><MdDelete className="text-2xl" /></span>} type="text" shape="circle" title="Trash" onClick={onTrash} />
-      {inTrash && (
-        <>
-          <Divider type="vertical" />
-          <Button icon={<MdRestore className="text-xl" />} type="text" title="Restore" onClick={onRestore}>
-            Restore
-          </Button>
-          <Popconfirm
-            title="Empty Trash"
-            description="Are you sure you want to permanently delete all items in the trash?"
-            onConfirm={onEmptyTrash}
-            okText="Yes"
-            cancelText="No"
-            okButtonProps={{ danger: true }}
-          >
-            <Button icon={<MdDeleteSweep className="text-xl" />} danger type="text" title="Empty Trash">
-              Empty trash
+        )}
+        {inTrash && (
+          <>
+            <Button icon={<MdRestore className="text-xl" />} type="text" title="Restore" onClick={onRestore}>
+              Restore
             </Button>
-          </Popconfirm>
-        </>
-      )}
+            <Popconfirm
+              title="Empty Trash"
+              description="Are you sure you want to permanently delete all items in the trash?"
+              onConfirm={onEmptyTrash}
+              okText="Yes"
+              cancelText="No"
+              okButtonProps={{ danger: true }}
+            >
+              <Button icon={<MdDeleteSweep className="text-xl" />} danger type="text" title="Empty Trash">
+                Empty trash
+              </Button>
+            </Popconfirm>
+          </>
+        )}
+      </Flex>
     </Flex>
   );
 };
