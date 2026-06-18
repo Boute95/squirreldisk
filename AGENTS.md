@@ -9,7 +9,7 @@ This is a Tauri desktop application (Rust backend + React frontend) for visualiz
 - Also avoid: `cargo clippy`, `cargo test`, `npm run tauri build` unless explicitly requested.
 
 
-### Structure
+## Structure
 - `src-tauri/` — Rust/Tauri backend
   - `src/main.rs` — Entry point, Tauri commands
   - `src/scan.rs` — Disk scanning logic (sidecar invocation)
@@ -22,11 +22,8 @@ This is a Tauri desktop application (Rust backend + React frontend) for visualiz
   - `components/FileContextMenu.tsx` — Context menu
   - `pruneData.ts` — Tree data utilities
 
-### Key Technologies
+## Key Technologies
 - **Frontend:** React, TypeScript, Ant Design, @nivo/treemap, react-beautiful-dnd
 - **Backend:** Tauri v2, Rust, sysinfo, walkdir, trash crate
 - **Styling:** Tailwind CSS via classes
 
-### Agent behavior
-- When discussing a plan, never go to implementation unless asked by the developer.
-- By default, set yourself in discussing plan mode.

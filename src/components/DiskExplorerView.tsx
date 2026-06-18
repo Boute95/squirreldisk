@@ -6,7 +6,7 @@ import { patternSquaresDef } from "@nivo/core";
 import ToolBar from "./ToolBar";
 import FileContextMenu from "./FileContextMenu";
 import ExplorerSidebar from "./ExplorerSidebar";
-import { Layout } from "antd";
+import { Layout, Progress } from "antd";
 const { Header } = Layout;
 
 (window as any).LockDNDEdgeScrolling = () => true;
@@ -23,6 +23,7 @@ interface DiskExplorerViewProps {
   refreshStatus: { items: number; total: number } | null;
   onRefresh: () => void;
   onCancelRefresh: () => void;
+  knownFolderSize?: number;
 
   // Tree data
   viewTree: DiskItem | null;
@@ -52,6 +53,7 @@ const DiskExplorerView = ({
   refreshStatus,
   onRefresh,
   onCancelRefresh,
+  knownFolderSize,
   viewTree,
   setFocusedPath,
   deleteList,
@@ -67,7 +69,7 @@ const DiskExplorerView = ({
 
   return (
     <Layout>
-      <Header className={"pt-0 pl-2 h-10 flex flex-col items-start bg-white/20"}>
+      <Header className={"pt-0 pl-2 h-10 flex flex-row items-start bg-white/20"}>
         <ToolBar
           onFolderUp={onFolderUp}
           onPrevious={onPrevious}
@@ -77,6 +79,7 @@ const DiskExplorerView = ({
           isRefreshing={isRefreshing}
           refreshStatus={refreshStatus}
           onCancelRefresh={onCancelRefresh}
+          knownFolderSize={knownFolderSize}
         />
       </Header>
 

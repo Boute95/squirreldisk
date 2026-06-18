@@ -47,6 +47,7 @@ const Scanning = () => {
    // Partial scan state
    const [isRefreshing, setIsRefreshing] = useState(false);
    const [refreshStatus, setRefreshStatus] = useState<{ items: number; total: number } | null>(null);
+   const [knownFolderSize, setKnownFolderSize] = useState<number>(0);
 
    const goUpOneFolder = () => {
       if (focusedPath === "/") return;
@@ -117,7 +118,7 @@ const Scanning = () => {
    // Partial scan event listeners
    useEffect(() => {
       if (isRefreshing) {
-         const unlistenStatus = listen("scan_partial_status", (event: any) => {
+         const unlistenStatus = listen("scan_status", (event: any) => {
             setRefreshStatus(event.payload);
          });
          const unlistenCompleted = listen("scan_partial_completed", (event: any) => {
@@ -212,6 +213,12 @@ const Scanning = () => {
       setIsRefreshing(true);
       setRefreshStatus(null);
 
+      // Capture the known size of the folder being refreshed for progress heuristic
+      const folderSize = focusedPath === "/"
+        ? fullTree.current.data
+        : getNode(fullTree.current, focusedPath.slice(1).split("/"))?.data ?? 0;
+      setKnownFolderSize(folderSize);
+
       // Build absolute path: disk + focusedPath (skip leading "/")
       const pathToScan = focusedPath === "/" ? disk : `${disk}${focusedPath}`;
       invoke("refresh_folder", { path: pathToScan });
@@ -286,6 +293,7 @@ const Scanning = () => {
                refreshStatus={refreshStatus}
                onRefresh={handleRefresh}
                onCancelRefresh={handleCancelRefresh}
+               knownFolderSize={knownFolderSize}
                viewTree={viewTree}
                setFocusedPath={setFocusedPath}
                deleteList={deleteList}

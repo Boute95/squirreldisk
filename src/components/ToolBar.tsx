@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button, Flex, Divider, Progress } from "antd";
-import { MdDriveFolderUpload, MdDelete, MdRefresh } from "react-icons/md";
+import { MdDriveFolderUpload, MdDelete, MdRefresh, MdClose } from "react-icons/md";
 import { TiArrowLeft, TiArrowRight } from "react-icons/ti";
 
 interface ToolBarProps {
@@ -13,6 +13,7 @@ interface ToolBarProps {
    isRefreshing?: boolean;
    refreshStatus?: { items: number; total: number } | null;
    onCancelRefresh?: () => void;
+   knownFolderSize?: number;
 }
 
 const ToolBar: React.FC<ToolBarProps> = ({ 
@@ -24,11 +25,13 @@ const ToolBar: React.FC<ToolBarProps> = ({
    onRefresh,
    isRefreshing,
    refreshStatus,
-   onCancelRefresh
+   onCancelRefresh,
+   knownFolderSize
 }) => {
-   const progressPercent = refreshStatus && refreshStatus.total > 0
-      ? Math.round((refreshStatus.items / refreshStatus.total) * 100)
-      : 0;
+
+useEffect(() => {
+  console.log(refreshStatus)
+}, [refreshStatus])
 
   return (
     <Flex gap="small" className={`items-center ${className}`}>
@@ -39,34 +42,39 @@ const ToolBar: React.FC<ToolBarProps> = ({
       <Divider type="vertical" />
       <Button icon={<span className="flex items-center"><MdDriveFolderUpload className="text-2xl" /></span>} type="text" shape="circle" title="Folder Up" onClick={onFolderUp} />
       <Divider type="vertical" />
-      <Button
-        icon={<span className="flex items-center"><MdRefresh className={`text-2xl ${isRefreshing ? 'animate-spin' : ''}`} /></span>}
-        type="text"
-        shape="circle"
-        title="Refresh Folder"
-        onClick={onRefresh}
-      />
+      {!isRefreshing && (
+        <Button
+          icon={<span className="flex items-center"><MdRefresh className="text-2xl" /></span>}
+          type="text"
+          shape="circle"
+          title="Refresh Folder"
+          onClick={onRefresh}
+        />
+      )}
       {isRefreshing && onCancelRefresh && (
         <>
-          <Divider type="vertical" />
-          <Button
-            icon={<span className="flex items-center"><span className="text-xs font-bold">✕</span></span>}
-            type="text"
-            shape="circle"
-            title="Cancel Refresh"
-            onClick={onCancelRefresh}
-            style={{ color: '#ff4d4f' }}
+          <Progress
+            percent={refreshStatus && knownFolderSize && knownFolderSize > 0 ? Math.round((refreshStatus.total / knownFolderSize) * 100) : 0}
+
+            type="circle"
+            size={24}
+            strokeWidth={18}
+            format={() => (
+              <Button
+                type="text"
+                size="small"
+                icon={<MdClose className="text-lg" />}
+                onClick={onCancelRefresh}
+                title="Cancel Refresh"
+                aria-label="Cancel Refresh"
+                className="flex items-center justify-center w-full h-full"
+              />
+            )}
           />
         </>
       )}
       <Divider type="vertical" />
       <Button icon={<span className="flex items-center"><MdDelete className="text-2xl" /></span>} type="text" shape="circle" title="Trash" onClick={onTrash} />
-      <Progress
-        percent={progressPercent}
-        status="active"
-        strokeWidth={4}
-        showInfo={false}
-      />
     </Flex>
   );
 };
