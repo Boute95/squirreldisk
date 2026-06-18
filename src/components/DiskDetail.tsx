@@ -207,7 +207,7 @@ const Scanning = () => {
    };
 
    const handleRefresh = (path?: string) => {
-      const targetPath = path ?? focusedPath;
+      const targetPath = typeof path === 'string' ? path : focusedPath;
       if (!fullTree.current || !targetPath) return;
       setIsRefreshing(true);
       setRefreshStatus(null);
