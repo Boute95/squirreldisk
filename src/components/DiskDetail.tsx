@@ -76,11 +76,10 @@ const Scanning = () => {
 
    const goToTrash = () => {
       if (!trashPath) return;
-      // Navigate to trash folder - treat it like entering a directory
       setFocusedPath(trashPath);
+      handleRefresh(trashPath);
    };
 
-   // Get trash path for this disk on mount
    useEffect(() => {
       invoke<string>("get_trash_path", { diskMountPoint: disk }).then((path) => {
          setTrashPath(path);
@@ -115,7 +114,6 @@ const Scanning = () => {
       };
    }, [disk, setStatus]);
 
-   // Partial scan event listeners
    useEffect(() => {
       if (isRefreshing) {
          const unlistenStatus = listen("scan_status", (event: any) => {
@@ -141,41 +139,29 @@ const Scanning = () => {
       }
    }, [isRefreshing]);
 
-   // Merge scanned subtree into existing full tree
    const mergePartialScanIntoTree = (scannedSubtree: DiskItem) => {
       if (!fullTree.current) return;
 
-      // Parse focusedPath into path segments (remove leading "/")
       const pathParts = focusedPath.startsWith("/") ? focusedPath.slice(1).split("/") : focusedPath.split("/");
-
-      // Find the node in fullTree that corresponds to focusedPath
       const targetNode = getNode(fullTree.current, pathParts);
       if (!targetNode) {
          console.warn("Could not find node at path:", focusedPath);
          return;
       }
-
-      // Fix ids in scanned children so they match the full tree's absolute paths
       const newChildren = (scannedSubtree.children || []).map((child: DiskItem) =>
          fixNodeIds(child, targetNode.id)
       );
-
-      // Replace children with scanned result
       targetNode.children = newChildren;
       targetNode.data = scannedSubtree.data;
-
-      // Recalculate data for all ancestors up to root
       recalcAncestors(fullTree.current, pathParts);
 
       if (fullTree.current) {
          markLeafs(fullTree.current);
       }
 
-      // Update viewTree with current focusedPath
       setViewTree(depthCutForTreeView(getCurrentRootNode(), maxDepth));
    };
 
-   // Recursively fix node ids to use absolute paths matching the full tree
    const fixNodeIds = (node: DiskItem, parentId: string): DiskItem => {
       const fixed = { ...node };
       fixed.id = parentId + "/" + fixed.name;
@@ -188,13 +174,11 @@ const Scanning = () => {
    };
 
    const recalcAncestors = (root: DiskItem, pathParts: string[]): void => {
-      // Recalculate from root down to the focused node's parent
       let current: DiskItem | null = root;
       for (let i = 0; i < pathParts.length - 1; i++) {
          if (!current || !current.children) return;
          const childNode: DiskItem | undefined = current.children.find((c: any) => c.name === pathParts[i + 1]);
          if (!childNode) return;
-         // Recalculate this node's data from its children
          current.data = current.children.reduce((sum, child) => sum + (child.data || 0), 0);
          current = childNode;
       }
@@ -207,36 +191,26 @@ const Scanning = () => {
       return subTree || fullTree.current;
    };
 
-   // Refresh handler
-   const handleRefresh = () => {
-      if (!fullTree.current || !focusedPath) return;
+   const handleRefresh = (path?: string) => {
+      const targetPath = path ?? focusedPath;
+      if (!fullTree.current || !targetPath) return;
       setIsRefreshing(true);
       setRefreshStatus(null);
 
-      // Capture the known size of the folder being refreshed for progress heuristic
-      const folderSize = focusedPath === "/"
+      const folderSize = targetPath === "/"
         ? fullTree.current.data
-        : getNode(fullTree.current, focusedPath.slice(1).split("/"))?.data ?? 0;
+        : getNode(fullTree.current, targetPath.slice(1).split("/"))?.data ?? 0;
       setKnownFolderSize(folderSize);
 
-      // Build absolute path: disk + focusedPath (skip leading "/")
-      const pathToScan = focusedPath === "/" ? disk : `${disk}${focusedPath}`;
+      const pathToScan = targetPath === "/" ? disk : `${disk}${targetPath}`;
       invoke("refresh_folder", { path: pathToScan });
    };
 
-   // Cancel refresh handler
    const handleCancelRefresh = () => {
       setIsRefreshing(false);
       setRefreshStatus(null);
       invoke("stop_refresh_folder");
    };
-
-   // useEffect(() => {
-   //    if (view == "disk") {
-   //       const rootDir = baseDataD3Hierarchy.current!;
-   //       setFocusedDirectory(rootDir);
-   //    }
-   // }, [view]);
 
    useEffect(() => {
       if (fullTree.current?.children.length) {

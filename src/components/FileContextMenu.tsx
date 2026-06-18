@@ -6,9 +6,10 @@ import { writeText } from "@tauri-apps/plugin-clipboard-manager";
 interface FileContextMenuProps {
   path: string;
   children: React.ReactNode;
+  onTrash?: () => void;
 }
 
-const FileContextMenu = ({ path, children }: FileContextMenuProps) => {
+const FileContextMenu = ({ path, children, onTrash }: FileContextMenuProps) => {
   const items: MenuProps["items"] = [
     {
       key: "open",
@@ -30,7 +31,11 @@ const FileContextMenu = ({ path, children }: FileContextMenuProps) => {
       key: "trash",
       label: "Move to trash",
       danger: true,
-      onClick: () => invoke("move_to_trash", { path }),
+      onClick: () => {
+        invoke("move_to_trash", { path }).then(() => {
+          onTrash?.();
+        });
+      },
     },
   ];
 

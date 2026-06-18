@@ -96,7 +96,7 @@ const DiskExplorerView = ({
             d3Chart={d3Chart}
           />
 
-          <FileContextMenu path={selPath}>
+          <FileContextMenu path={selPath} onTrash={onRefresh}>
             <div className="h-full w-full" onContextMenu={(e) => { if (!contextNode) { e.preventDefault(); e.stopPropagation(); } }} onClick={() => setContextNode(null)}>
               {viewTree && (
                 <ResponsiveTreeMap
