@@ -151,13 +151,29 @@ fn show_in_folder(path: String) {
 }
 #[tauri::command]
 fn move_to_trash(path: String) -> Result<(), String> {
-    trash::delete(&path).map_err(|e| e.to_string())
+    eprintln!("[trash] move_to_trash called with path: {:?}", &path);
+    if path.trim().is_empty() {
+        eprintln!("[trash] ERROR: empty path received");
+        return Err("Cannot move to trash: path is empty (no treemap node selected)".into());
+    }
+    match trash::delete(&path) {
+        Ok(()) => {
+            eprintln!("[trash] move_to_trash succeeded for: {:?}", &path);
+            Ok(())
+        }
+        Err(e) => {
+            eprintln!("[trash] move_to_trash FAILED for {:?}: {}", &path, e);
+            Err(e.to_string())
+        }
+    }
 }
 
 /// Get the platform-dependent trash folder path for a given mount point/disk.
 #[tauri::command]
 fn get_trash_path(disk_mount_point: String) -> Result<String, String> {
+    println!("[trash] get_trash_path: disk_mount_point={}", &disk_mount_point);
     let trash_dir = get_trash_directory(&disk_mount_point)?;
+    println!("[trash] get_trash_path result: {}", &trash_dir);
     Ok(trash_dir)
 }
 
@@ -189,10 +205,13 @@ fn get_trash_directory(_mount_point: &str) -> Result<String, String> {
 /// Empty the trash for a given disk/mount point.
 #[tauri::command]
 fn empty_trash(disk_mount_point: String) -> Result<(), String> {
+    println!("[trash] empty_trash: disk_mount_point={}", &disk_mount_point);
     let trash_dir = get_trash_directory(&disk_mount_point)?;
+    println!("[trash] empty_trash trash_dir={}", &trash_dir);
     let path = PathBuf::from(&trash_dir);
 
     if !path.exists() {
+        println!("[trash] empty_trash: trash dir does not exist, skipping");
         return Ok(());
     }
 
@@ -261,7 +280,9 @@ fn restore_from_trash(
     disk_mount_point: String,
     trash_item_path: String,
 ) -> Result<(), String> {
+    println!("[trash] restore_from_trash: disk_mount_point={}, trash_item_path={}", &disk_mount_point, &trash_item_path);
     let trash_dir = get_trash_directory(&disk_mount_point)?;
+    println!("[trash] restore_from_trash trash_dir={}", &trash_dir);
 
     #[cfg(target_os = "linux")]
     {

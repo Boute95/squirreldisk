@@ -97,7 +97,7 @@ const DiskExplorerView = ({
           />
 
           <FileContextMenu path={selPath}>
-            <div className="h-full w-full" onContextMenu={(e) => { if (!contextNode) { e.preventDefault(); e.stopPropagation(); } }} onMouseLeave={() => setContextNode(null)}>
+            <div className="h-full w-full" onContextMenu={(e) => { if (!contextNode) { e.preventDefault(); e.stopPropagation(); } }} onClick={() => setContextNode(null)}>
               {viewTree && (
                 <ResponsiveTreeMap
                   data={viewTree}
