@@ -49,7 +49,7 @@ export const FileLine = ({
             </div>
             <div className="flex-1 basis-3/12 text-right text-xs">
               {item &&
-                ((item.value ?? item.data) / mul / mul / mul).toFixed(2)}{" "}
+                ((item.value ?? item.size) / mul / mul / mul).toFixed(2)}{" "}
               GB
             </div>
           </div>

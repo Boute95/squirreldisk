@@ -4,7 +4,7 @@ declare module "shade-blend-color";
 interface DiskItem {
   id: string;
   name: string;
-  data: number;
+  size: number;
   value: number;
   isLeaf: boolean;
   children: Array<DiskItem>;

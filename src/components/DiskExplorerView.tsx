@@ -110,7 +110,7 @@ const DiskExplorerView = ({
                 <ResponsiveTreeMap
                   data={viewTree}
                   identity="name"
-                  value="data"
+                  value="size"
                   valueFormat=".03s"
                   labelTextColor={{
                     from: "color",

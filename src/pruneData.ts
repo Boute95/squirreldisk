@@ -18,7 +18,7 @@ export const itemMap = (obj: any, parent: any = null) => {
     //recursive call to scan property
     if (obj["children"].length > 0) {
       obj.isDirectory = true;
-      obj.value = obj.data;
+      obj.value = obj.size;
       obj["children"].forEach((element: any) => {
         itemMap(element, obj);
       });
@@ -31,13 +31,13 @@ const partition = (data: DiskItem) => {
   const hierarchy = d3
     .hierarchy(data)
     .sum(function (d) {
-      return !d.children || d.children.length === 0 ? d.data : 0;
+      return !d.children || d.children.length === 0 ? d.size : 0;
     })
 
     // .sum(d => d.value)
     // .sum((d: DiskItem) => (d.children ? d.data : d.data))
     // .sum(d => d.data ? 0 : d.value)
-    .sort((a: any, b: any) => (b.data || 0) - (a.data || 0));
+    .sort((a: any, b: any) => (b.value || 0) - (a.value || 0));
   // debugger;
   const partition = d3
     .partition<DiskItem>()
@@ -63,7 +63,7 @@ export function depthCutForTreeView(node: DiskItem, depth: number, curDepth = 0)
     newNode.children = [];
   } else {
     if (newNode.children?.length) {
-      newNode.data = 0;
+      newNode.size = 0;
     }
     newNode.children = newNode.children.map((c) =>
       depthCutForTreeView(c, depth, curDepth + 1)

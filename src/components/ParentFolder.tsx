@@ -38,7 +38,7 @@ export const ParentFolder = ({ parentPath }: ParentFolderProps) => {
                parentPath.name.replace("\\/", "/").replace("\\", "/")}
          </div>
          <div className="text-xs">
-            {parentPath && (parentPath.data! / mul / mul / mul).toFixed(2)} GB
+            {parentPath && (parentPath.size! / mul / mul / mul).toFixed(2)} GB
          </div>
       </div>
    );

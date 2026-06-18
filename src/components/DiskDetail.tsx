@@ -167,7 +167,7 @@ const Scanning = () => {
          fixNodeIds(child, targetNode.id)
       );
       targetNode.children = newChildren;
-      targetNode.data = scannedSubtree.data;
+      targetNode.size = scannedSubtree.size;
       recalcAncestors(fullTree.current, pathParts);
 
       if (fullTree.current) {
@@ -194,7 +194,7 @@ const Scanning = () => {
          if (!current || !current.children) return;
          const childNode: DiskItem | undefined = current.children.find((c: any) => c.name === pathParts[i + 1]);
          if (!childNode) return;
-         current.data = current.children.reduce((sum, child) => sum + (child.data || 0), 0);
+         current.size = current.children.reduce((sum, child) => sum + (child.size || 0), 0);
          current = childNode;
       }
    };
@@ -213,8 +213,8 @@ const Scanning = () => {
       setRefreshStatus(null);
 
       const folderSize = targetPath === "/"
-        ? fullTree.current.data
-        : getNode(fullTree.current, targetPath.slice(1).split("/"))?.data ?? 0;
+        ? fullTree.current.size
+        : getNode(fullTree.current, targetPath.slice(1).split("/"))?.size ?? 0;
       setKnownFolderSize(folderSize);
 
       const pathToScan = targetPath === "/" ? disk : `${disk}${targetPath}`;

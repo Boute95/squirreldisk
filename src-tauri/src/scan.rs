@@ -37,6 +37,7 @@ pub fn start(
     let mut paths_to_scan: Vec<String> = Vec::new();
     paths_to_scan.push("--json-output".to_string());
     paths_to_scan.push("--progress".to_string());
+    paths_to_scan.push("--quantity=apparent-size".to_string());
     paths_to_scan.push(ratio);
 
     if path.eq("/") {
@@ -221,7 +222,7 @@ pub fn refresh_folder(
 ) -> Result<(), ()> {
     println!("Partial scan: {}", path);
 
-    let paths_to_scan = vec!["--json-output".to_string(), "--progress".to_string(), path];
+    let paths_to_scan = vec!["--json-output".to_string(), "--progress".to_string(), "--quantity=apparent-size".to_string(), path];
 
     let pdu_command = app_handle
         .shell()
