@@ -19,6 +19,7 @@ interface DiskExplorerViewProps {
   onTrash: () => void;
 
   // Trash actions
+  showTrash?: boolean;
   inTrash?: boolean;
   onEmptyTrash?: () => void;
 
@@ -53,6 +54,7 @@ const DiskExplorerView = ({
   onPrevious,
   onNext,
   onTrash,
+  showTrash,
   inTrash,
   onEmptyTrash,
   isRefreshing,
@@ -81,6 +83,7 @@ const DiskExplorerView = ({
           onPrevious={onPrevious}
           onNext={onNext}
           onTrash={onTrash}
+          showTrash={showTrash}
           onRefresh={onRefresh}
           isRefreshing={isRefreshing}
           refreshStatus={refreshStatus}

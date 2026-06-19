@@ -7,6 +7,7 @@ import {
    subTreeFromPath,
    markLeafs,
    getNode,
+   ensureTrashInTree,
 } from "../pruneData";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
@@ -81,6 +82,7 @@ const Scanning = () => {
       handleRefresh(trashPath);
    };
 
+   const showTrash = trashPath ? trashPath.startsWith(disk) : false;
    const inTrash = trashPath && focusedPath ? focusedPath.startsWith(trashPath) : false;
 
    const handleEmptyTrash = async () => {
@@ -96,14 +98,6 @@ const Scanning = () => {
    };
 
    useEffect(() => {
-      invoke<string>("get_trash_path", { diskMountPoint: disk }).then((path) => {
-         setTrashPath(path);
-      }).catch(() => {
-         setTrashPath("");
-      });
-   }, [disk]);
-
-   useEffect(() => {
       if (fullTree.current) {
          return;
       }
@@ -112,20 +106,36 @@ const Scanning = () => {
       });
       const unlisten2 = listen("scan_completed", (event: any) => {
          fullTree.current = JSON.parse(event.payload).tree;
-         if (fullTree.current) {
-            markLeafs(fullTree.current);
-         }
-         setFocusedPath(fullTree.current?.id!);
+         if (!fullTree.current) return;
+
+         markLeafs(fullTree.current);
          const mapped = itemMap(fullTree.current);
          baseDataD3Hierarchy.current = diskItemToD3Hierarchy(mapped as any);
-         setView("disk");
+
+         invoke<string>("get_trash_path", { diskMountPoint: disk })
+            .then((path) => {
+               setTrashPath(path);
+               if (path && fullTree.current) {
+                  ensureTrashInTree(fullTree.current, path, disk);
+                  markLeafs(fullTree.current);
+                  console.log("Trash injected into fullTree", path, fullTree.current);
+               }
+            })
+            .catch(() => setTrashPath(""))
+            .finally(() => {
+               if (!fullTree.current) return;
+               setFocusedPath(fullTree.current.id!);
+               const treeForView = depthCutForTreeView(fullTree.current, maxDepth);
+               console.log("viewTree (after trash injection pass)", treeForView);
+               setViewTree(treeForView);
+               setView("disk");
+            });
       });
       invoke("start_scanning", { path: disk, ratio: fullscan ? "0" : "0.001" });
       return () => {
          unlisten.then((f) => f());
          unlisten2.then((f) => f());
          invoke("stop_scanning", { path: disk });
-         //   worker.current!.postMessage({ type: "stop" });
       };
    }, [disk, setStatus]);
 
@@ -278,6 +288,7 @@ const Scanning = () => {
                onPrevious={goPreviousPath}
                onNext={goNextPath}
                onTrash={goToTrash}
+               showTrash={showTrash}
                inTrash={inTrash}
                onEmptyTrash={handleEmptyTrash}
                isRefreshing={isRefreshing}

@@ -253,6 +253,43 @@ export function buildFullPath(
   //   }
 }
 
+export function ensureTrashInTree(
+  tree: DiskItem,
+  trashPath: string,
+  diskMountPoint: string
+): boolean {
+  if (!trashPath.startsWith(diskMountPoint)) return false;
+
+  // Get tree-relative path (e.g., "home/user/.local/share/Trash")
+  const relativePath = trashPath.slice(diskMountPoint.length).replace(/^\/+/, "");
+  if (!relativePath) return false;
+
+  const parts = relativePath.split("/");
+  let current = tree;
+
+  for (const part of parts) {
+    if (!current.children) current.children = [];
+    const found = current.children.find((c) => c.name === part);
+    if (found) {
+      current = found;
+    } else {
+      const parentId = current.id || "/";
+      const newNode: DiskItem = {
+        name: part,
+        id: parentId === "/" ? part : parentId + "/" + part,
+        size: 0,
+        value: 0,
+        isLeaf: false,
+        children: [],
+      };
+      current.children.push(newNode);
+      current = newNode;
+    }
+  }
+
+  return true;
+}
+
 export function markLeafs(tree: DiskItem) {
   if (!tree.children || tree.children.length === 0) {
     tree.isLeaf = true;

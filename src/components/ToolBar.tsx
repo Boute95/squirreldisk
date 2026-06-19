@@ -14,6 +14,7 @@ interface ToolBarProps {
    refreshStatus?: { items: number; total: number } | null;
    onCancelRefresh?: () => void;
    knownFolderSize?: number;
+   showTrash?: boolean;
    inTrash?: boolean;
    onRestore?: () => void;
    onEmptyTrash?: () => void;
@@ -30,6 +31,7 @@ const ToolBar: React.FC<ToolBarProps> = ({
    refreshStatus,
    onCancelRefresh,
    knownFolderSize,
+   showTrash = true,
    inTrash,
    onRestore,
    onEmptyTrash
@@ -46,7 +48,9 @@ useEffect(() => {
         <Button icon={<span className="flex items-center"><TiArrowLeft className="text-3xl" /></span>} type="text" shape="circle" title="Previous" onClick={onPrevious} />
         <Button icon={<span className="flex items-center"><TiArrowRight className="text-3xl" /></span>} type="text" shape="circle" title="Next" onClick={onNext} />
         <Button icon={<span className="flex items-center"><MdDriveFolderUpload className="text-2xl" /></span>} type="text" shape="circle" title="Folder Up" onClick={onFolderUp} />
-        <Button icon={<span className="flex items-center"><MdDelete className="text-2xl" /></span>} type="text" shape="circle" title="Trash" onClick={onTrash} />
+        {showTrash && (
+          <Button icon={<span className="flex items-center"><MdDelete className="text-2xl" /></span>} type="text" shape="circle" title="Trash" onClick={onTrash} />
+        )}
       </Flex>
 
       <Divider type="vertical" />
