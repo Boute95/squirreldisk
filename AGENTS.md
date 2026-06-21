@@ -27,3 +27,5 @@ This is a Tauri desktop application (Rust backend + React frontend) for visualiz
 - **Backend:** Tauri v2, Rust, sysinfo, walkdir, trash crate
 - **Styling:** Tailwind CSS via classes
 
+## Other
+- when using grep in src-tauri, exclude the target folder.

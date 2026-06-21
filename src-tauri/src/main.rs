@@ -9,7 +9,6 @@ use std::fs;
 use std::path::PathBuf;
 
 use serde::Serialize;
-use scan::PartialScanState;
 use std::process::Command;
 use std::sync::Mutex;
 use sysinfo::{DiskExt, System, SystemExt};
@@ -42,8 +41,7 @@ fn main() {
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_process::init())
-        .manage(MyState(Default::default()))
-        .manage(PartialScanState(Default::default()))
+.manage(ScanProcess(Default::default()))
         .setup(|app| {
             let _window = app.get_webview_window("main").unwrap();
             // window.open_devtools();
@@ -59,7 +57,7 @@ fn main() {
             window_style::set_window_styles(&window).unwrap();
 
             // app.listen_global("scan_stop", |event| {
-            //     let s = app.state::<MyState>();
+            //     let s = app.state::<ScanProcess>();
             //     s.0.lock().unwrap().take().unwrap().kill();
             // });
             Ok(())
@@ -74,8 +72,7 @@ fn main() {
             get_trash_path,
             empty_trash,
             restore_from_trash,
-            refresh_folder,
-            stop_refresh_folder
+
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -406,12 +403,12 @@ fn get_disks() -> String {
     serde_json::to_string(&vec).unwrap().into()
 }
 
-pub struct MyState(Mutex<Option<CommandChild>>);
+pub struct ScanProcess(Mutex<Option<CommandChild>>);
 
 #[tauri::command]
 fn start_scanning(
     app_handle: tauri::AppHandle,
-    state: tauri::State<'_, MyState>,
+    state: tauri::State<'_, ScanProcess>,
     path: String,
     ratio: String,
 ) -> Result<(), ()> {
@@ -421,27 +418,11 @@ fn start_scanning(
 #[tauri::command]
 fn stop_scanning(
     _app_handle: tauri::AppHandle,
-    state: tauri::State<'_, MyState>,
+    state: tauri::State<'_, ScanProcess>,
     _path: String,
 ) -> Result<(), ()> {
     scan::stop(state);
     Ok(())
 }
 
-#[tauri::command]
-fn refresh_folder(
-    app_handle: tauri::AppHandle,
-    state: tauri::State<'_, PartialScanState>,
-    path: String,
-) -> Result<(), ()> {
-    scan::refresh_folder(app_handle, state, path)
-}
 
-#[tauri::command]
-fn stop_refresh_folder(
-    _app_handle: tauri::AppHandle,
-    state: tauri::State<'_, PartialScanState>,
-) -> Result<(), ()> {
-    scan::stop_refresh(state);
-    Ok(())
-}

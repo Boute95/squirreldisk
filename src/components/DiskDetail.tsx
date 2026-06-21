@@ -47,9 +47,15 @@ const Scanning = () => {
    const deleteMap = useRef<Map<string, boolean>>(new Map());
 
    // Partial scan state
-   const [isRefreshing, setIsRefreshing] = useState(false);
-   const [refreshStatus, setRefreshStatus] = useState<{ items: number; total: number } | null>(null);
+   const [partialScan, setPartialScan] = useState(false);
    const [knownFolderSize, setKnownFolderSize] = useState<number>(0);
+   const partialScanRef = useRef(false);
+   const trashPathRef = useRef("");
+   const focusedPathRef = useRef(focusedPath);
+
+   partialScanRef.current = partialScan;
+   trashPathRef.current = trashPath;
+   focusedPathRef.current = focusedPath;
 
    const goUpOneFolder = () => {
       if (focusedPath === "/") return;
@@ -105,31 +111,49 @@ const Scanning = () => {
          setStatus(event.payload);
       });
       const unlisten2 = listen("scan_completed", (event: any) => {
-         fullTree.current = JSON.parse(event.payload).tree;
-         if (!fullTree.current) return;
+         const parsed = JSON.parse(event.payload);
+         if (!parsed?.tree) return;
 
-         markLeafs(fullTree.current);
-         const mapped = itemMap(fullTree.current);
-         baseDataD3Hierarchy.current = diskItemToD3Hierarchy(mapped as any);
+         if (partialScanRef.current) {
+            // ── Partial scan (refresh / Go to Trash) ──
+            mergePartialScanIntoTree(parsed.tree);
+            const tp = trashPathRef.current;
+            if (tp && fullTree.current) {
+               ensureTrashInTree(fullTree.current, tp, disk);
+               markLeafs(fullTree.current);
+            }
+            setPartialScan(false);
+            setStatus(null);
+            setViewTree(depthCutForTreeView(getCurrentRootNode(), maxDepth));
+         } else {
+            // ── Initial scan ──
+            fullTree.current = parsed.tree;
+            if (!fullTree.current) return;
 
-         invoke<string>("get_trash_path", { diskMountPoint: disk })
-            .then((path) => {
-               setTrashPath(path);
-               if (path && fullTree.current) {
-                  ensureTrashInTree(fullTree.current, path, disk);
-                  markLeafs(fullTree.current);
-                  console.log("Trash injected into fullTree", path, fullTree.current);
-               }
-            })
-            .catch(() => setTrashPath(""))
-            .finally(() => {
-               if (!fullTree.current) return;
-               setFocusedPath(fullTree.current.id!);
-               const treeForView = depthCutForTreeView(fullTree.current, maxDepth);
-               console.log("viewTree (after trash injection pass)", treeForView);
-               setViewTree(treeForView);
-               setView("disk");
-            });
+            markLeafs(fullTree.current);
+            const mapped = itemMap(fullTree.current);
+            baseDataD3Hierarchy.current = diskItemToD3Hierarchy(mapped as any);
+
+            invoke<string>("get_trash_path", { diskMountPoint: disk })
+               .then((path) => {
+                  setTrashPath(path);
+                  if (path && fullTree.current) {
+                     ensureTrashInTree(fullTree.current, path, disk);
+                     markLeafs(fullTree.current);
+                     console.log("Trash injected into fullTree", path, fullTree.current);
+                  }
+               })
+               .catch(() => setTrashPath(""))
+               .finally(() => {
+                  if (!fullTree.current) return;
+                  setStatus(null);
+                  setFocusedPath(fullTree.current.id!);
+                  const treeForView = depthCutForTreeView(fullTree.current, maxDepth);
+                  console.log("viewTree (after trash injection pass)", treeForView);
+                  setViewTree(treeForView);
+                  setView("disk");
+               });
+         }
       });
       invoke("start_scanning", { path: disk, ratio: fullscan ? "0" : "0.001" });
       return () => {
@@ -139,38 +163,16 @@ const Scanning = () => {
       };
    }, [disk, setStatus]);
 
-   useEffect(() => {
-      if (isRefreshing) {
-         const unlistenStatus = listen("scan_status", (event: any) => {
-            setRefreshStatus(event.payload);
-         });
-         const unlistenCompleted = listen("scan_partial_completed", (event: any) => {
-            try {
-               const result = JSON.parse(event.payload);
-               if (result && result.tree) {
-                  mergePartialScanIntoTree(result.tree);
-               }
-            } catch (e) {
-               console.error("Failed to parse partial scan result:", e);
-            } finally {
-               setIsRefreshing(false);
-               setRefreshStatus(null);
-            }
-         });
-         return () => {
-            unlistenStatus.then((f) => f());
-            unlistenCompleted.then((f) => f());
-         };
-      }
-   }, [isRefreshing]);
+
 
    const mergePartialScanIntoTree = (scannedSubtree: DiskItem) => {
       if (!fullTree.current) return;
 
-      const pathParts = focusedPath.startsWith("/") ? focusedPath.slice(1).split("/") : focusedPath.split("/");
+      const fp = focusedPathRef.current;
+      const pathParts = fp.startsWith("/") ? fp.slice(1).split("/") : fp.split("/");
       const targetNode = getNode(fullTree.current, pathParts);
       if (!targetNode) {
-         console.warn("Could not find node at path:", focusedPath);
+         console.warn("Could not find node at path:", fp);
          return;
       }
       const newChildren = (scannedSubtree.children || []).map((child: DiskItem) =>
@@ -183,8 +185,6 @@ const Scanning = () => {
       if (fullTree.current) {
          markLeafs(fullTree.current);
       }
-
-      setViewTree(depthCutForTreeView(getCurrentRootNode(), maxDepth));
    };
 
    const fixNodeIds = (node: DiskItem, parentId: string): DiskItem => {
@@ -211,16 +211,17 @@ const Scanning = () => {
 
    const getCurrentRootNode = (): DiskItem => {
       if (!fullTree.current) return fullTree.current!;
-      if (focusedPath === "/") return fullTree.current;
-      const subTree = subTreeFromPath(fullTree.current, focusedPath.substring(1).split("/"));
+      const fp = focusedPathRef.current;
+      if (fp === "/") return fullTree.current;
+      const subTree = subTreeFromPath(fullTree.current, fp.substring(1).split("/"));
       return subTree || fullTree.current;
    };
 
    const handleRefresh = (path?: string) => {
       const targetPath = typeof path === 'string' ? path : focusedPath;
       if (!fullTree.current || !targetPath) return;
-      setIsRefreshing(true);
-      setRefreshStatus(null);
+      setPartialScan(true);
+      setStatus(null);
 
       const folderSize = targetPath === "/"
         ? fullTree.current.size
@@ -228,13 +229,13 @@ const Scanning = () => {
       setKnownFolderSize(folderSize);
 
       const pathToScan = targetPath === "/" ? disk : `${disk}${targetPath}`;
-      invoke("refresh_folder", { path: pathToScan });
+      invoke("start_scanning", { path: pathToScan, ratio: "0.01" });
    };
 
    const handleCancelRefresh = () => {
-      setIsRefreshing(false);
-      setRefreshStatus(null);
-      invoke("stop_refresh_folder");
+      setPartialScan(false);
+      setStatus(null);
+      invoke("stop_scanning", { path: disk });
    };
 
    useEffect(() => {
@@ -291,8 +292,8 @@ const Scanning = () => {
                showTrash={showTrash}
                inTrash={inTrash}
                onEmptyTrash={handleEmptyTrash}
-               isRefreshing={isRefreshing}
-               refreshStatus={refreshStatus}
+               isRefreshing={partialScan}
+               refreshStatus={status}
                onRefresh={handleRefresh}
                onCancelRefresh={handleCancelRefresh}
                knownFolderSize={knownFolderSize}
