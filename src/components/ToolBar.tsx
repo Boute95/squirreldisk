@@ -87,7 +87,7 @@ useEffect(() => {
         )}
         {inTrash && (
           <>
-            <Button icon={<MdRestore className="text-xl" />} type="text" title="Restore" onClick={onRestore}>
+            <Button icon={<span className="flex items-center"><MdRestore className="text-2xl" /></span>} type="text" title="Restore" onClick={onRestore}>
               Restore
             </Button>
             <Popconfirm
@@ -98,7 +98,7 @@ useEffect(() => {
               cancelText="No"
               okButtonProps={{ danger: true }}
             >
-              <Button icon={<MdDeleteSweep className="text-xl" />} danger type="text" title="Empty Trash">
+              <Button icon={<span className="flex items-center"><MdDeleteSweep className="text-xl" /></span>} danger type="text" title="Empty Trash">
                 Empty trash
               </Button>
             </Popconfirm>
